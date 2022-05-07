@@ -1,0 +1,127 @@
+
+# Clang requires some format to be supplied as base (NONE, seems to be LLVM + don't do any
+# formatting) LLVM was the common base for all existing formats.
+#
+BasedOnStyle: Google
+#
+
+Standard: Cpp11
+
+# See 'Maximum Column Policy (100 column rule)' in sbindent help
+ColumnLimit: 100
+
+# See 'Indent Width Policy' in sbindent help
+IndentWidth: 4
+
+# See 'Label Policy' in sbindent help
+AccessModifierOffset: -2
+IndentCaseLabels: false
+
+# See 'Blank Line Policy' in sbindent help
+MaxEmptyLinesToKeep: 3
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+# There no particular reason to have Google's default of two spaces for trailing comments, one is
+# plenty sufficient and seems more natural when writing code. One is also the LLVM standard.
+SpacesBeforeTrailingComments: 1
+
+# See: 'No Single-Line Function Policy' in sbindent help
+AllowShortFunctionsOnASingleLine: None
+
+# Brace policy: concise.
+#BreakBeforeBraces: Attach    (Google default)
+
+# int* p.
+DerivePointerAlignment: false
+# PointerAlignment: Left (Google default)
+
+# Discourages return types on their own line
+# https://stackoverflow.com/questions/26635370/in-clang-format-what-do-the-penalties-do
+#PenaltyBreakBeforeFirstCallParameter: 1 (Google default)
+#PenaltyReturnTypeOnItsOwnLine: 200   (Google default)
+
+# Ideally, we'd be sorting includes, but there could be semantic fallout for doing so, so we let
+# this be an option for modules by placing -sort-includes in sbindent.cfg or one can manually run:
+# sbindent -sort-includes FILE
+SortIncludes:           false
+
+# If sbindent -sort-includes is active, we follow google coding standard
+# IncludeCategories:
+#   - Regex:           '^<.*\.h>'
+#     Priority:        1
+#   - Regex:           '^<.*'
+#     Priority:        2
+#   - Regex:           '.*'
+#     Priority:        3
+#IncludeIsMainRegex: '([-_](test|unittest))?$'
+
+# See 'Template Policy' in sbindent help
+# AlwaysBreakTemplateDeclarations: true  (google default)
+
+# CommentPragmas prevent long lines from being reflowed.
+#  https://github.com/include-what-you-use/include-what-you-use/blob/master/docs/IWYUPragmas.md
+CommentPragmas: '^( IWYU pragma:|lint|LocalWords:)'
+
+# See 'Function Policy' in sbindent help
+#
+# BinPackParameters:
+#   Place all function parameters on a sign le line or one per line, i.e.
+#     int foo(int a, int b, ...)              # when line length <= 100
+#   or
+#     int foo(int a,                          # one per line when length > 100
+#             int b,
+#             ...)
+#   Bin packed parameters result in condensed lines, e.g.
+#     int foo(int a, int b, .... int f,
+#             int c, int d)
+#   and are harder to read
+#
+#  AllowAllParametersOfDeclarationOnNextLine:
+#    if true we get bin packing
+BinPackParameters: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# See: 'Constructor Initializer Policy' in sbindent help
+# BreakConstructorInitializersBeforeComma needs to be true
+# to get constructor initializers one per line when they would normally fit on one line.
+BreakConstructorInitializersBeforeComma: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+# We need to reflow comments. clang-format will mess up comments if ReflowComments isn't on.
+# ReflowComments: true           (Google default)
+
+# See 'No Single Line Conditionals/Loops Policy' in sbindent help
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# Penalty controls:
+# https://stackoverflow.com/questions/26635370/in-clang-format-what-do-the-penalties-do
+# Specifying
+#    PenaltyBreakBeforeFirstCallParameter: 0
+#    PenaltyReturnTypeOnItsOwnLine: 100000
+# results in
+#     return fFunction(
+#            boost::get<0>(std::forward<Tuple>(tuple)), boost::get<1>(std::forward<Tuple>(tuple)));
+# and without we get:
+#     return fFunction(boost::get<0>(std::forward<Tuple>(tuple)),
+#                      boost::get<1>(std::forward<Tuple>(tuple)));
+# Without the penalty items we get what we'd like the standard to be and is also consistent with the
+# Google standard.
+
+#---------------------------------#
+# no align consecutive statements #
+#---------------------------------#
+# We do not ask clang-format to align consecutive statements, e.g.
+#   int aaaa = 12;
+#   float b = 23000.0;
+#   std::string ccc = "23";
+#
+# Note, with following, both the variable declarations and assignments are aligned, but
+# imagine what happens when the types or variables are long, the result isn't clean.
+#   AlignConsecutiveDeclarations: true
+#   AlignConsecutiveAssignments: true
+#   int         aaaa = 12;
+#   float       b    = 23000.0;
+#   std::string ccc  = "23";
+
+...

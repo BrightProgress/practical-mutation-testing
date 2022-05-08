@@ -8,8 +8,8 @@ add_library(dict_cpp ${SOURCE_LIST} ${HEADER_LIST})
 # We need this directory, and users of our library will need it too
 target_include_directories(dict_cpp PUBLIC ${PROJECT_SOURCE_DIR}/Dictionary/include ${PROJECT_BINARY_DIR}/Dictionary/include)
 
-# All users of this library will need at least C++17
-target_compile_features(dict_cpp PUBLIC cxx_std_17)
+# All users of this library will need at least C++20
+target_compile_features(dict_cpp PUBLIC cxx_std_20)
 
 # IDEs should put the headers in a nice place
 source_group(

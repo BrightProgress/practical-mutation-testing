@@ -16,11 +16,9 @@ set_target_properties(gmock_main PROPERTIES FOLDER extern)
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     add_executable(${TESTNAME} ${FILES})
     target_link_libraries(${TESTNAME} gtest gmock gtest_main ${LIBRARIES})
-    gtest_discover_tests(${TESTNAME}
-        WORKING_DIRECTORY ${PROJECT_DIR}/cpp
-        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}/cpp"
-    )
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
+    gtest_discover_tests(${TESTNAME})
+    set_target_properties(${TESTNAME} PROPERTIES FOLDER unittest)
 endmacro()
 
+package_add_test_with_libraries(DictionaryUtilTests testUtils.cpp dict_cpp)
 package_add_test_with_libraries(DictionaryTests testDictionary.cpp dict_cpp)

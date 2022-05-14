@@ -5,6 +5,8 @@
 #include <locale>
 #include <vector>
 
+#include "dbc.hpp"
+
 Dictionary::Dictionary()
     : prefix_()
     , isWord_(false)

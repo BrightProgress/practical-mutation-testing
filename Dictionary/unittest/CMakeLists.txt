@@ -20,5 +20,5 @@ macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     set_target_properties(${TESTNAME} PROPERTIES FOLDER unittest)
 endmacro()
 
-package_add_test_with_libraries(DictionaryUtilTests testUtils.cpp dict_cpp)
-package_add_test_with_libraries(DictionaryTests testDictionary.cpp dict_cpp)
+package_add_test_with_libraries(DictionaryUtilTests testUtils.cpp dict_cpp dbc)
+package_add_test_with_libraries(DictionaryTests testDictionary.cpp dict_cpp dbc)

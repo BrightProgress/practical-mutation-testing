@@ -23,8 +23,28 @@ inline size_t charIndex(char c) {
     return (c - 'a');
 }
 
-// Assume that toAdd is all lowercase and is nonempty
+std::string validateAndTransformWord_(std::string const& toAdd) {
+    size_t len = toAdd.size();
+    std::string word{toAdd};
+
+    if (len == 0){
+        throw  std::invalid_argument("not a word");
+    }
+    std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+    for (size_t idx = 0; idx < len; ++idx) {
+        if (!((word[idx] >= 'a' && word[idx] <= 'z'))) {
+            throw std::invalid_argument("not a word");
+        }
+    }
+    return word;
+}
+
 void Dictionary::add(std::string const& toAdd) {
+    std::string word(validateAndTransformWord_(toAdd));
+    add_(word);
+}
+
+void Dictionary::add_(std::string const& toAdd) {
     size_t prefixLen = prefix_.length();
     size_t strLen = toAdd.length();
 
@@ -38,7 +58,7 @@ void Dictionary::add(std::string const& toAdd) {
         } else if (!suffix_[idx]) {
             suffix_[idx] = std::make_unique<Dictionary>();
         }
-        suffix_[idx]->add(toAdd);
+        suffix_[idx]->add_(toAdd);
         return;
     }
     size_t minLen = (prefixLen < strLen) ? prefixLen : strLen;
@@ -63,7 +83,7 @@ void Dictionary::add(std::string const& toAdd) {
             suffix_[idx] = std::make_unique<Dictionary>();
             isEmpty_ = false;
         }
-        suffix_[idx]->add(toAdd.substr(diffIdx));
+        suffix_[idx]->add_(toAdd.substr(diffIdx));
     } else if (diffIdx == strLen) {
         // toAdd is a proper prefix of this->prefix
         auto sub_dictionary = std::make_unique<Dictionary>();
@@ -103,7 +123,7 @@ void Dictionary::add(std::string const& toAdd) {
         // Add the appropriate suffix of toAdd
         std::string toAddSuffix = toAdd.substr(diffIdx);
         suffix_[charIndex(toAddSuffix[0])] = std::make_unique<Dictionary>();
-        suffix_[charIndex(toAddSuffix[0])]->add(toAddSuffix);
+        suffix_[charIndex(toAddSuffix[0])]->add_(toAddSuffix);
     }
 }
 

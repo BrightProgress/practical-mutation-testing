@@ -27,6 +27,9 @@ private:
 	std::unique_ptr<Dictionary> suffix_[26];
 	bool isWord_;
 	bool isEmpty_;
+
+	// Workhorse function - assumes validated word.
+	void add_(std::string const & toAdd);
 };
 
 namespace utils {

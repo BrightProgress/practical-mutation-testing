@@ -2,6 +2,8 @@
 file(GLOB_RECURSE HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Dictionary/include/*.hpp")
 file(GLOB_RECURSE SOURCE_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Dictionary/src/*.?pp")
 
+add_definitions(-DDBC_ENABLED)
+
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(dict_cpp ${SOURCE_LIST} ${HEADER_LIST})
 

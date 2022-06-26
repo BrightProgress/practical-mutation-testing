@@ -5,6 +5,8 @@
  *  Author : Prahlad Sampath
  */
 
+#include "dbc.hpp"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,9 +29,17 @@ private:
 	std::unique_ptr<Dictionary> suffix_[26];
 	bool isWord_;
 	bool isEmpty_;
+	bool isRoot_;
 
 	// Workhorse function - assumes validated word.
 	void add_(std::string const & toAdd);
+
+	// private access function with invariant
+	inline std::unique_ptr<Dictionary>& suffix(size_t  idx);
+	inline std::unique_ptr<Dictionary> const & suffix(size_t  idx) const;
+
+	// class invariant
+	bool classInvariant_();
 };
 
 namespace utils {

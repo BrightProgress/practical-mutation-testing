@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#include "Dictionary_utils.hpp"
 #include "Dictionary.hpp"
 
 #include <string>

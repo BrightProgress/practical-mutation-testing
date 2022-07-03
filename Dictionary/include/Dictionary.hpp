@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Dictionary.hpp
  *
@@ -28,8 +29,3 @@ private:
 	bool isWord_;
 	bool isEmpty_;
 };
-
-namespace utils {
-	std::vector<std::string> split(std::string const& wordList);
-	void splitAndAddToDict(Dictionary& dict, std::string line);
-}

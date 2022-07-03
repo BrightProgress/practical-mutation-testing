@@ -19,8 +19,6 @@ public:
 
 	bool check(std::string const & word, bool toLower = true) const;
 
-	void listing(std::string const & prefix = std::string()) const;
-
 	size_t size() const;
 
 private:

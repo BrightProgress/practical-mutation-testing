@@ -104,20 +104,6 @@ void Dictionary::add(std::string const& toAdd) {
     }
 }
 
-void Dictionary::listing(std::string const& prefix) const {
-    std::string newPrefix = prefix + prefix_;
-    if (isWord_) {
-        std::cout << newPrefix << std::endl;
-    }
-    if (!isEmpty_) {
-        for (size_t i = 0; i < 26; ++i) {
-            if (suffix_[i]) {
-                suffix_[i]->listing(newPrefix);
-            }
-        }
-    }
-}
-
 size_t Dictionary::size() const {
     size_t mySize = 0;
     if (!isEmpty_) {

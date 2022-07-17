@@ -16,6 +16,15 @@ Dictionary::Dictionary()
     DBC_CLASS_INVARIANT(construction);
 }
 
+Dictionary::Dictionary(std::string const & word)
+    : prefix_(word)
+    , isWord_(true)
+    , isEmpty_(false)
+    , isRoot_(true) {
+
+    DBC_CLASS_INVARIANT(construction);
+}
+
 Dictionary::~Dictionary() = default;
 
 
@@ -37,7 +46,7 @@ inline std::unique_ptr<Dictionary> const & Dictionary::suffix(size_t  idx) const
 bool Dictionary::classInvariant_() {
     bool res = true;
 
-    res &= (isRoot_ || !prefix_.empty()); // isRoot_ ==> prefix_ is non-empty
+    res &= (isRoot_ || !prefix_.empty()); // !isRoot_ ==> prefix_ is non-empty (only root entry can have an empty prefix)
 
     res &= !isWord_ || !prefix_.empty(); // isWord_==> prefix_ is non-empty
 
@@ -74,13 +83,12 @@ std::string validateAndTransformWord_(std::string const& toAdd) {
 }
 
 void Dictionary::add(std::string const& toAdd) {
-    DBC_CLASS_INVARIANT();
-
     std::string word(validateAndTransformWord_(toAdd));
     add_(word);
 }
 
 void Dictionary::add_(std::string const& toAdd) {
+    DBC_CLASS_INVARIANT();
     DBC_PRE_POST(add_word, ([&]()->std::pair<bool,size_t>{return std::make_pair(check(toAdd), size());}))
         << dbc::post << 
             [](std::pair<bool,size_t> pre,std::pair<bool,size_t> post)->bool{
@@ -94,15 +102,16 @@ void Dictionary::add_(std::string const& toAdd) {
     if (prefixLen == 0) {
         size_t idx = charIndex(toAdd[0]);
         if (isEmpty_) {
+            // empty root dictionary!
             prefix_ = toAdd;
             isWord_ = true;
 			isEmpty_ = false;
-            return;
         } else if (!suffix(idx)) {
-            suffix(idx) = std::make_unique<Dictionary>();
+            suffix(idx) = std::unique_ptr<Dictionary>(new Dictionary(toAdd));
             suffix(idx)->isRoot_ = false;
+        } else {
+            suffix(idx)->add_(toAdd);
         }
-        suffix(idx)->add_(toAdd);
         return;
     }
     size_t minLen = (prefixLen < strLen) ? prefixLen : strLen;
@@ -124,45 +133,38 @@ void Dictionary::add_(std::string const& toAdd) {
         // this->prefix is a proper prefix of toAdd
         size_t idx = charIndex(toAdd[diffIdx]);
         if (!suffix(idx)) {
-            suffix(idx) = std::make_unique<Dictionary>();
+            suffix(idx) = std::unique_ptr<Dictionary>(new Dictionary(toAdd.substr(diffIdx)));
             suffix(idx)->isRoot_ = false;
-            isEmpty_ = false;
+        } else {
+            suffix(idx)->add_(toAdd.substr(diffIdx));
         }
-        suffix(idx)->add_(toAdd.substr(diffIdx));
     } else if (diffIdx == strLen) {
         // toAdd is a proper prefix of this->prefix
-        auto sub_dictionary = std::make_unique<Dictionary>();
-        sub_dictionary->isRoot_ = false;
-
         std::string newSuffix = prefix_.substr(diffIdx);
-        sub_dictionary->prefix_ = newSuffix;
+        auto sub_dictionary = std::unique_ptr<Dictionary>(new Dictionary(newSuffix));
+        sub_dictionary->isRoot_ = false;
         sub_dictionary->isWord_ = isWord_;
-        if (!isEmpty_) {
-            sub_dictionary->isEmpty_ = false;
-            for (size_t i = 0; i < 26; ++i) {
-                // Move the suffix array to sub_dictionary
-                sub_dictionary->suffix(i) = std::move(suffix(i));
-            }
+        for (size_t i = 0; i < 26; ++i) {
+            // Move the suffix array to sub_dictionary
+            sub_dictionary->suffix(i) = std::move(suffix(i));
         }
-        prefix_ = newPrefix;
+        prefix_ = toAdd;
         isWord_ = true; // toAdd is a word!
-        suffix(charIndex(newSuffix[0])) = std::move(sub_dictionary);
         isEmpty_ = false;
+        suffix(charIndex(newSuffix[0])) = std::move(sub_dictionary);
     } else {
         // toAdd and this->prefix are not equal.
         // have a potentially empty common prefix
-        auto sub_dictionary = std::make_unique<Dictionary>();
-        sub_dictionary->isRoot_ = false;
 
         std::string newSuffix = prefix_.substr(diffIdx);
-        sub_dictionary->prefix_ = newSuffix;
+        std::string toAddSuffix = toAdd.substr(diffIdx);
+
+        auto sub_dictionary = std::unique_ptr<Dictionary>(new Dictionary(newSuffix));
+        sub_dictionary->isRoot_ = false;
         sub_dictionary->isWord_ = isWord_;
-        if (!isEmpty_) {
-            sub_dictionary->isEmpty_ = false;
-            for (size_t i = 0; i < 26; ++i) {
-                // Move the suffix array to sub_dictionary
-                sub_dictionary->suffix(i) = std::move(suffix(i));
-            }
+        for (size_t i = 0; i < 26; ++i) {
+            // Move the suffix array to sub_dictionary
+            sub_dictionary->suffix(i) = std::move(suffix(i));
         }
         prefix_ = newPrefix;
         isWord_ = false; // no common word..
@@ -170,11 +172,10 @@ void Dictionary::add_(std::string const& toAdd) {
         isEmpty_ = false;
 
         // Add the appropriate suffix of toAdd
-        std::string toAddSuffix = toAdd.substr(diffIdx);
-        sub_dictionary = std::make_unique<Dictionary>();
+        // reuse sub_dictionary - it is guaranteed to be nullptr here!
+        sub_dictionary = std::unique_ptr<Dictionary>(new Dictionary(toAddSuffix));
         sub_dictionary->isRoot_ = false;
         suffix(charIndex(toAddSuffix[0])) = std::move(sub_dictionary);
-        suffix(charIndex(toAddSuffix[0]))->add_(toAddSuffix);
     }
 }
 

@@ -31,6 +31,9 @@ private:
 	bool isEmpty_;
 	bool isRoot_;
 
+	// private constructor
+	Dictionary(std::string const & word);
+
 	// Workhorse function - assumes validated word.
 	void add_(std::string const & toAdd);
 

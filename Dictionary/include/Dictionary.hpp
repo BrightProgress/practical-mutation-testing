@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <set>
 
 class Dictionary {
 public:
@@ -19,8 +20,6 @@ public:
 	void add(std::string const & toAdd);
 
 	bool check(std::string const & word, bool toLower = true) const;
-
-	void listing(std::string const & prefix = std::string()) const;
 
 	size_t size() const;
 
@@ -40,6 +39,8 @@ private:
 	// private access function with invariant
 	inline std::unique_ptr<Dictionary>& suffix(size_t  idx);
 	inline std::unique_ptr<Dictionary> const & suffix(size_t  idx) const;
+	// listing of dictionary - needed to specify invariant
+	void listing_(std::string const & prefix, std::set<std::string> & list) const;
 
 	// class invariant
 	bool classInvariant_();

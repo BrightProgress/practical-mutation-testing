@@ -4,6 +4,7 @@
 #include <iostream>
 #include <locale>
 #include <vector>
+#include <set>
 
 #include "dbc.hpp"
 
@@ -43,29 +44,6 @@ inline std::unique_ptr<Dictionary> const & Dictionary::suffix(size_t  idx) const
     return suffix_[idx];
 }
 
-bool Dictionary::classInvariant_() {
-    bool res = true;
-
-    res &= (isRoot_ || !prefix_.empty()); // !isRoot_ ==> prefix_ is non-empty (only root entry can have an empty prefix)
-
-    res &= !isWord_ || !prefix_.empty(); // isWord_==> prefix_ is non-empty
-
-    size_t numSubDirs = 0;
-    for (size_t idx = 0; idx < 26; ++idx) {
-        if (suffix(idx)) {
-            ++numSubDirs;
-        }
-    }
-    res &= (isEmpty_ || isWord_ || (numSubDirs > 1)); // if the Dictionary is not empty and prefix is NOT a word then there must be at least 2 sub-dictionaries
-    for (size_t idx = 0; idx < 26; ++idx) {
-        res &= !static_cast<bool>(suffix(idx)) || 
-                charIndex(suffix(idx)->prefix_.at(0)) == idx; // non-empty suffixes start with character corresponding to their index.
-    }
-
-    return res;
-}
-
-
 std::string validateAndTransformWord_(std::string const& toAdd) {
     size_t len = toAdd.size();
     std::string word{toAdd};
@@ -89,11 +67,12 @@ void Dictionary::add(std::string const& toAdd) {
 
 void Dictionary::add_(std::string const& toAdd) {
     DBC_CLASS_INVARIANT();
-    DBC_PRE_POST(add_word, ([&]()->std::pair<bool,size_t>{return std::make_pair(check(toAdd), size());}))
+    DBC_PRE_POST(add_word_increases_size, ([&]()->std::tuple<bool,size_t, std::set<std::string>>{std::set<std::string> list; listing_("",list); return std::make_tuple(check(toAdd), size(), list);}))
         << dbc::post << 
-            [](std::pair<bool,size_t> pre,std::pair<bool,size_t> post)->bool{
-                return (post.first && // the word is a member in the dictionary
-                        (pre.first || post.second == pre.second + 1)); // if word is not a member in pre, then size of dictionary increments by one
+            [](std::tuple<bool,size_t, std::set<std::string>> pre,std::tuple<bool,size_t,std::set<std::string>> post)->bool{
+                return (std::get<0>(post) && // the word is a member in the dictionary
+                        (std::get<0>(pre) || std::get<1>(post) == std::get<1>(pre) + 1) && // if word is not a member in pre, then size of dictionary increments by one
+                        std::all_of(std::get<2>(pre).cbegin(), std::get<2>(pre).cend(), [&](std::string const & elem){return std::get<2>(post).count(elem) > 0;})); // all words in pre are in post
             };
 
     size_t prefixLen = prefix_.length();
@@ -179,20 +158,6 @@ void Dictionary::add_(std::string const& toAdd) {
     }
 }
 
-void Dictionary::listing(std::string const& prefix) const {
-    std::string newPrefix = prefix + prefix_;
-    if (isWord_) {
-        std::cout << newPrefix << std::endl;
-    }
-    if (!isEmpty_) {
-        for (size_t i = 0; i < 26; ++i) {
-            if (suffix(i)) {
-                suffix(i)->listing(newPrefix);
-            }
-        }
-    }
-}
-
 size_t Dictionary::size() const {
     size_t mySize = 0;
     if (!isEmpty_) {
@@ -236,6 +201,42 @@ bool Dictionary::check(std::string const& word, bool toLower) const {
 		// Not a word in dictionary
 		return false;
 	}
+}
+
+bool Dictionary::classInvariant_() {
+    bool res = true;
+
+    res &= (isRoot_ || !prefix_.empty()); // !isRoot_ ==> prefix_ is non-empty (only root entry can have an empty prefix)
+
+    res &= !isWord_ || !prefix_.empty(); // isWord_==> prefix_ is non-empty
+
+    size_t numSubDirs = 0;
+    for (size_t idx = 0; idx < 26; ++idx) {
+        if (suffix(idx)) {
+            ++numSubDirs;
+        }
+    }
+    res &= (isEmpty_ || isWord_ || (numSubDirs > 1)); // if the Dictionary is not empty and prefix is NOT a word then there must be at least 2 sub-dictionaries
+    for (size_t idx = 0; idx < 26; ++idx) {
+        res &= !static_cast<bool>(suffix(idx)) || 
+                charIndex(suffix(idx)->prefix_.at(0)) == idx; // non-empty suffixes start with character corresponding to their index.
+    }
+
+    return res;
+}
+
+void Dictionary::listing_(std::string const& prefix, std::set<std::string> & list) const {
+    std::string newPrefix = prefix + prefix_;
+    if (isWord_) {
+        list.insert(newPrefix);
+    }
+    if (!isEmpty_) {
+        for (size_t i = 0; i < 26; ++i) {
+            if (suffix(i)) {
+                suffix(i)->listing_(newPrefix, list);
+            }
+        }
+    }
 }
 
 // random line to help mutate-cpp remove above line in a patch

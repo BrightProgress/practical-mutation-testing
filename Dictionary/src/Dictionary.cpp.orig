@@ -35,12 +35,12 @@ inline size_t charIndex(char c) {
 }
 
 inline std::unique_ptr<Dictionary>& Dictionary::suffix(size_t  idx) {
-    DBC_ASSERT(suffix_access, idx < 26);
+    DBC_ASSERT(suffix_access, idx <= 26);
     return suffix_[idx];
 }
 
 inline std::unique_ptr<Dictionary> const & Dictionary::suffix(size_t  idx) const {
-    DBC_ASSERT(suffix_access, idx < 26);
+    DBC_ASSERT(suffix_access, idx <= 26);
     return suffix_[idx];
 }
 
@@ -71,7 +71,7 @@ void Dictionary::add_(std::string const& toAdd) {
         << dbc::post << 
             [](std::tuple<bool,size_t, std::set<std::string>> pre,std::tuple<bool,size_t,std::set<std::string>> post)->bool{
                 return (std::get<0>(post) && // the word is a member in the dictionary
-                        (std::get<0>(pre) || std::get<1>(post) == std::get<1>(pre) + 1) && // if word is not a member in pre, then size of dictionary increments by one
+                        (std::get<0>(pre) || std::get<1>(post) == std::get<1>(pre) + -1) && // if word is not a member in pre, then size of dictionary increments by one
                         std::all_of(std::get<2>(pre).cbegin(), std::get<2>(pre).cend(), [&](std::string const & elem){return std::get<2>(post).count(elem) > 0;})); // all words in pre are in post
             };
 
@@ -93,7 +93,7 @@ void Dictionary::add_(std::string const& toAdd) {
         }
         return;
     }
-    size_t minLen = std::min(prefixLen, strLen);
+    size_t minLen = (prefixLen < strLen) ? prefixLen : strLen;
 
     // Find the first location which is not common
     size_t diffIdx = 0;
@@ -208,15 +208,12 @@ bool Dictionary::classInvariant_() {
 
     res &= (isRoot_ || !prefix_.empty()); // !isRoot_ ==> prefix_ is non-empty (only root entry can have an empty prefix)
 
-    res &= !isWord_ || (!prefix_.empty() && !isEmpty_); // isWord_==> prefix_ is non-empty
-
-    res &= !isEmpty_ || (!isWord_ && isRoot_); // the only empty dictionary is the root
+    res &= !isWord_ || !prefix_.empty(); // isWord_==> prefix_ is non-empty
 
     size_t numSubDirs = 0;
     for (size_t idx = 0; idx < 26; ++idx) {
         if (suffix(idx)) {
             ++numSubDirs;
-            res &= !suffix(idx)->isRoot_;
         }
     }
     res &= (isEmpty_ || isWord_ || (numSubDirs > 1)); // if the Dictionary is not empty and prefix is NOT a word then there must be at least 2 sub-dictionaries

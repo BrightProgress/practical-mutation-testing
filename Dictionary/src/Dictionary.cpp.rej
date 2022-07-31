@@ -1,0 +1,10 @@
+--- home/psampath/GitHub/practical-mutation-testing/Dictionary/src/Dictionary.cpp 2022-07-23 20:37:57.379346
++++ home/psampath/GitHub/practical-mutation-testing/Dictionary/src/Dictionary.cpp 2022-07-25 00:12:17.077039
+@@ -69,7 +69,6 @@
+     DBC_CLASS_INVARIANT();
+     DBC_PRE_POST(add_word_increases_size, ([&]()->std::tuple<bool,size_t, std::set<std::string>>{std::set<std::string> list; listing_("",list); return std::make_tuple(check(toAdd), size(), list);}))
+         << dbc::post <<
+-            [](std::tuple<bool,size_t, std::set<std::string>> pre,std::tuple<bool,size_t,std::set<std::string>> post)->bool{
+                 return (std::get<0>(post) && // the word is a member in the dictionary
+                         (std::get<0>(pre) || std::get<1>(post) == std::get<1>(pre) + 1) && // if word is not a member in pre, then size of dictionary increments by one
+                         std::all_of(std::get<2>(pre).cbegin(), std::get<2>(pre).cend(), [&](std::string const & elem){return std::get<2>(post).count(elem) > 0;})); // all words in pre are in post

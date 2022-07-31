@@ -1,4 +1,12 @@
 include(GoogleTest)
+include(CTest)
+
+add_compile_options(-Wall -Werror -Wextra)
+add_compile_definitions("$<$<CONFIG:Debug>:DBC_ENABLED>")
+add_compile_options("$<$<CONFIG:Debug>:-fsanitize=undefined>")
+add_link_options("$<$<CONFIG:Debug>:-fsanitize=undefined>")
+add_compile_options("$<$<CONFIG:Debug>:-fsanitize=address>")
+add_link_options("$<$<CONFIG:Debug>:-fsanitize=address>")
 
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     add_executable(${TESTNAME} ${FILES})

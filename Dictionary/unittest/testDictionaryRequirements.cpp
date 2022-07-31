@@ -45,6 +45,8 @@ TEST(Dictionary_Req, Validation_1) {
     
     d.add("abcde");
 
+    EXPECT_THROW(d.add("abcde9"), std::invalid_argument);
+    EXPECT_THROW(d.add("9abcde"), std::invalid_argument);
     EXPECT_THROW(d.add("ab890"), std::invalid_argument);
     EXPECT_THROW(d.add("ab cde"), std::invalid_argument);
     EXPECT_THROW(d.add(""), std::invalid_argument);

@@ -1,8 +1,15 @@
+include(CTest)
+
 # Optionally glob, but only for CMake 3.12 or later:
 file(GLOB_RECURSE HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Dictionary/include/*.hpp")
 file(GLOB_RECURSE SOURCE_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Dictionary/src/*.?pp")
 
-add_definitions(-DDBC_ENABLED -Wall)
+add_compile_options(-Wall -Werror -Wextra)
+add_compile_definitions("$<$<CONFIG:Debug>:DBC_ENABLED>")
+add_compile_options("$<$<CONFIG:Debug>:-fsanitize=undefined>")
+add_link_options("$<$<CONFIG:Debug>:-fsanitize=undefined>")
+add_compile_options("$<$<CONFIG:Debug>:-fsanitize=address>")
+add_link_options("$<$<CONFIG:Debug>:-fsanitize=address>")
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(dict_cpp ${SOURCE_LIST} ${HEADER_LIST})
